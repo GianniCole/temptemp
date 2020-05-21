@@ -1,0 +1,359 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <meta charset="UTF-8" />
+    <meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/d3/3.4.11/d3.min.js"></script>
+    <script src="jquery-3.5.1.min.js"></script>
+    <script src="http://ajax.googleapis.com/ajax/libs/jquery/1.10.2/jquery.min.js"></script>
+
+    <script src="https://cdn.jsdelivr.net/npm/popper.js@1.16.0/dist/umd/popper.min.js" integrity="sha384-Q6E9RHvbIyZFJoft+2mJbHaEWldlvI9IOYy5n3zV9zzTtmI3UksdQRVvoxMfooAo" crossorigin="anonymous"></script>
+
+
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.4.1/css/bootstrap.min.css"
+        integrity="sha384-Vkoo8x4CGsO3+Hhxv8T/Q5PaXtkKtu6ug5TOeNV6gBiFeWPGFN9MuhOf23Q9Ifjh" crossorigin="anonymous">
+
+    <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.4.1/js/bootstrap.min.js"
+        integrity="sha384-wfSDF2E50Y2D1uUdj0O3uMBJnjuUD4Ih7YwaYd1iqfktj0Uod8GCExl3Og8ifwB6"
+        crossorigin="anonymous"></script>
+    <title>PROVA FORM!!!!</title>
+</head>
+
+<body>
+    <h1> form con lista aggiornata da array</h1>
+    <!-- Button trigger modal -->
+    <input type="number" id="test_index" placeholder="Insert index of node that you want to change name">
+
+    <button type="button" class="btn btn-primary" data-toggle="modal" data-target="#EditpublicNetModal">
+        Launch demo modal
+    </button>
+
+    <!-- Modal -->
+    <div class="modal fade" id="EditpublicNetModal" tabindex="-1" role="dialog"
+        aria-labelledby="EditpublicNetModalTitle" aria-hidden="true">
+        <div class="modal-dialog" role="document">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="exampleModalLongTitle">Router Configuration</h5>
+                    <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                        <span aria-hidden="true">&times;</span>
+                    </button>
+                </div>
+                <div class="modal-body">
+                    <form id="edit_public_net_form">
+                        <label for="labelnetname" class="col-form-label">Name:</label>
+                        <input type="text" id="publicnetname" placeholder="Public Net"><br>
+
+                        <label for="labelnetname" class="col-form-label">Net:</label>
+                        <div id="netListEditrouter_dropdown" class="dropdown">
+                            <button type="button" class="btn btn-default dropdown-toggle" data-toggle="dropdown"
+                                aria-expanded="false">
+                                <span id="netListEditrouter_label" class="dropdown-title">select net</span>
+                                <span class="fa fa-caret-down"></span>
+                            </button>
+                            <ul id="netListEditrouter_dropdown_menu" class="dropdown-menu"></ul>
+                        </div>
+                    </form>
+                </div>
+
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+                    <button type="button" class="btn btn-primary" id="saveNodePublicNet_button">Save changes</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <p id="testedit"></p>
+
+
+    <script>
+
+        d3.select("#saveNodePublicNet_button").on("click", CheckPublicNet);
+        function CheckPublicNet() {
+            console.log("[checkPublicNet]oldname : " + nameSource + " !!");
+
+            var newnameSource = d3.select('#publicnetname').property('value')
+            console.log("NUOVO NOMEEEE : " + newnameSource + " !!");
+            if (newnameSource.length > 0) {
+                if (nameSource != newnameSource) {
+                    if (AllowChangeeName(newnameSource)) {
+                        data_topology['nodes'][INDEX]['name'] = newnameSource;  //update
+                        resourceNameList[INDEX]['name'] = newnameSource;        //update
+
+                        $(function showListElement () {
+                            $('#EditpublicNetModal').modal('toggle');
+                            d3.select("#testedit")
+                                .append("text")
+                                .text(resourceNameList);
+                        });
+
+                    }
+
+                    else {
+                        $('#publicnetname').after('<span class="error">The name choosen is already used. Change it! </span>');
+
+                    }
+                }
+                else {
+                    console.log("Il nome non è stato modificato!")
+
+                    $(function showListElement () {
+                        $('#EditpublicNetModal').modal('toggle');
+                        d3.select("#testedit")
+                            .append("text")
+                            .text(resourceNameList);
+            
+                    });
+
+                }
+            }
+            else {
+                $('#publicnetname').after('<span class="error">The name is required! </span>');
+            }
+           
+        }
+
+      
+        //devo scorrere data_topology['nodes']
+        //e prendere tutti gli elementi che hanno il group pari a quello del tipo.
+        //quindi se ad esempio è net.
+        //sono delle net sia private che public net
+        //e devo considerare sia quelle su openstack (caratterizzate da un valore di group di 1 o 2)
+        //sia quelle che si trovano nello stato di RIGHT, identificabili dal group pari a 201 o 202
+        //[dalla lista di TUTTE le net presenti nel grafico scarto quelle che sono nello stato ERROR!
+
+        data_topology = {
+            "nodes": [
+                {
+                    "fault_target": "net_2",
+                    "group": 3,
+                    "type": "resource",
+                    "name": "net_2",
+                    "ID": "5a58204f-5c45-4128-b9f9-81f8fe9d5442"
+                },
+                {
+                    "fault_target": "public",
+                    "group": 1,
+                    "type": "resource",
+                    "name": "public",
+                    "ID": "65a63b5d-4ab6-4a89-8fc5-4ab4c578efe5"
+                },
+                {
+                    "fault_target": "net_1",
+                    "group": 3,
+                    "type": "resource",
+                    "name": "net_1",
+                    "ID": "a61c2fc5-996e-4cad-90c3-3591935c8fd8"
+                },
+                {
+                    "fault_target": [
+                        {
+                            "subtarget": "port",
+                            "name": "172.24.4.7",
+                            "value": "f2892d02-2742-4e62-9abd-7ebb4bafa82b"
+                        },
+                        {
+                            "subtarget": "port",
+                            "name": "192.168.2.1",
+                            "value": "3ce38dc2-e9e6-4adf-86cd-828a09cdee0d"
+                        }
+                    ],
+                    "group": 2,
+                    "type": "resource",
+                    "name": "router_2",
+                    "ID": "01f956aa-02e1-46f5-b4b3-739a5aee5104"
+                },
+                {
+                    "fault_target": [
+                        {
+                            "subtarget": "port",
+                            "name": "172.24.4.14",
+                            "value": "3c84a41f-46f9-42a8-8af2-ef7ebbd4d1e5"
+                        },
+                        {
+                            "subtarget": "port",
+                            "name": "192.168.1.1",
+                            "value": "3dc8335f-3ed5-405b-b349-43a530250236"
+                        }
+                    ],
+                    "group": 2,
+                    "type": "resource",
+                    "name": "router_1",
+                    "ID": "c027c0f6-d71a-475a-8a5d-a94eb940c025"
+                },
+                {
+                    "fault_target": "public_subnet",
+                    "group": 4,
+                    "type": "resource",
+                    "name": "public_subnet",
+                    "ID": "0db29b77-dce9-468d-9f4c-d777953f217f"
+                },
+                {
+                    "fault_target": "subnet_1",
+                    "group": 4,
+                    "type": "resource",
+                    "name": "subnet_1",
+                    "ID": "3ae6e2e8-3d21-4ff1-aeb1-2ee98aec31d8"
+                },
+                {
+                    "fault_target": "subnet_2",
+                    "group": 4,
+                    "type": "resource",
+                    "name": "subnet_2",
+                    "ID": "c7d75fec-5738-4456-9a97-43d34e6cd571"
+                }
+            ],
+            "links": [
+                {
+                    "source": 1,
+                    "target": 3,
+                    "value": 1,
+                    "distance": 70
+                },
+                {
+                    "source": 1,
+                    "target": 4,
+                    "value": 1,
+                    "distance": 70
+                },
+                {
+                    "source": 1,
+                    "target": 5,
+                    "value": 1,
+                    "distance": 70
+                },
+                {
+                    "source": 2,
+                    "target": 6,
+                    "value": 1,
+                    "distance": 70
+                },
+                {
+                    "source": 0,
+                    "target": 7,
+                    "value": 1,
+                    "distance": 70
+                },
+                {
+                    "source": 3,
+                    "target": 0,
+                    "value": 1,
+                    "distance": 70
+                },
+                {
+                    "source": 4,
+                    "target": 2,
+                    "value": 1,
+                    "distance": 70
+                }
+            ]
+        };
+
+        //funzione che mi fa a lista ( crea un vettore di stringhe) di tutti gli elementi di una certa tipologia!
+        function getList(t) {
+            List = [];
+            switch (t) {
+                case "net":
+                    temp_list = data_topology["nodes"].filter(node => (node["group"] == 1 || node["group"] == 201 || node["group"] == 3 || node["group"] == 203));
+                    temp_list.forEach(node => List.push(node['name']));
+                    break;
+                case "subnet":
+                    temp_list = data_topology["nodes"].filter(node => (node["group"] == 4 || node["group"] == 204));
+                    temp_list.forEach(node => List.push(node['name']));
+                    break;
+                case "router":
+                    temp_list = data_topology["nodes"].filter(node => (node["group"] == 2 || node["group"] == 202));
+                    temp_list.forEach(node => List.push(node['name']));
+                    break;
+                case "vm":
+                    temp_list = data_topology["nodes"].filter(node => (node["group"] == 5 || node["group"] == 205));
+                    temp_list.forEach(node => List.push(node['name']));
+                    break;
+                case "switch":
+                    temp_list = data_topology["nodes"].filter(node => (node["group"] == 7 || node["group"] == 207));
+                    temp_list.forEach(node => List.push(node['name']));
+                    break;
+                default:
+                    List = [];
+            }
+            return List;
+        }
+   
+        var INDEX = $("#test_index").val();
+        var resourceNameList = [];
+        var nameSource;
+
+        //quando si mostra il modal deve fare queste cose!
+        $('#EditpublicNetModal').on('shown.bs.modal', function () {
+            resourceNameList = [];
+            data_topology['nodes'].forEach(node => resourceNameList.push(node['name']));        //mi carico il vettore di appogggio
+            console.log("Lista elementi: " + resourceNameList);
+            $("#testedit").html("")
+             var INDEX = d3.select("#test_index").property("value");
+            console.log("Si sta per modificare il nodo con indice " + INDEX)
+            nameSource = data_topology['nodes'][INDEX]['name'];
+            console.log("Tale nodo era chiamato " + nameSource);
+            d3.select("#publicnetname")
+                .attr("value", nameSource);
+            //            $("#edit_public_net_form").trigger("reset");
+            $("#netListEditrouter_dropdown_menu").html("");
+            listaelementi = getList('net');
+            if (listaelementi.length) {
+                for (var i = 0; i < listaelementi.length; i++) {
+                    $("#netListEditrouter_dropdown_menu").append(
+                        '<li data-original-index="' + i + 1 + '" data-toggle="tooltip" data-placement="top">' +
+                        '<a data-select-value="' + listaelementi[i] + '">' + listaelementi[i] + '</a>' +
+                        '</li>'
+                    );
+                }
+                $('#netListEditrouter_dropdown_menu li a').click(function () {
+                    //on change netListLabel content
+                    if ($('#netListEditrouter_label').text() !== $(this).text()) {
+                        $('#netListEditrouter_label').text($(this).text());
+                    }
+
+                    if ($('#netListEditrouter_label').text() !== ("select net")) {
+                        $('#netListEditrouter_button_save').prop('disabled', false);
+                    }
+                });
+            }
+            else {
+                $('#netListEditrouter_label').text("Empty");
+                $('#netListEditrouter_dropdown button').prop('disabled', true);
+            }
+        });
+
+
+        //funzione che verifica se un nome è già presente in lista oppure no!
+        function AllowChangeeName(inputText) {
+            console.log("[Function AllowChangeeName:] " + inputText);
+            if (resourceNameList.includes(inputText)) {
+                console.log("trovato elemento con nome:" + inputText);
+                return false;
+            }
+            else {
+                console.log("Il nome " + inputText + " può essere utilizzato per rinominare il nodo corrente!");
+                return true;
+            }
+        }
+
+
+    //in questo modo posso andare a vedere quale è l'indice dell'elemento router_1 all'intero di dataTopology
+        /* var pos = data_topology["nodes"].map(function (e) { return e.name; }).indexOf('router_1');
+
+         List = [];
+         var pos = data_topology["nodes"].map(function (e) { return e.name; }).indexOf('router_1');
+         console.log(pos)
+
+
+         l1 = data_topology["nodes"].filter(node => (node["group"] == 1 || node["group"] == 201 || node["group"] == 2 || node["group"] == 202));
+         l1.forEach(el => List.push(el['name']))
+         console.log(List)
+         */
+    </script>
+</body>
+
+</html>

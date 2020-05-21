@@ -1,0 +1,269 @@
+<script>
+    //DEFINIIONE FITTIZIA DI data_metwork_topology
+    //rigo 5933!
+    function handleEditClickNode(d, i) {
+        var data_network_topology;
+
+        console.log(data_network_topology);
+        node_index = i;
+        $('#editNode_configuration').html("");
+        /**** emphasized_node ****/
+        //turn off another active node
+        d3.selectAll('circle')
+            .filter(function (d, i) { return (i % 2) == 0 })
+            .style("opacity", 0);
+
+        //active clicked node
+        d3.select(this).selectAll('circle')
+            .filter(function (d, i) { return i == 0 })
+            .style("opacity", 1);
+
+        current_node = data_network_topology['nodes'][node_index];
+        current_node_groupresource = groupResources[current_node['groups']];
+        $('#editNode_configuration').html("");
+
+
+        //creo un modal diverso dipendentemente dalla tipologia di noto che si deve aggiungere!
+        switch (current_node_groupresource) {
+            case "public_network":
+                $('#editNode_configuration').append(
+                    '<div id="Edit_Node_configuration_content" class="modal-dialog modal-content style="top: 15px; width: 300px; background-color: aliceblue; border: 1px #555 solid; margin-top: 0px;">' +
+                    '<div class="modal-header">' +
+                    '<h5 class="modal-title" style="display: inline" ;> Configure public Network</h5>' +
+                    '<button id="Edit_Node_configuration_header_close" type="button" class="close">' +
+                    '</button>' +
+                    '</div>' +
+                    '<form id="EditPublicNetForm">' +
+                    '<p>You will customizee a public net. Insert the followin inormation </p>' +
+                    '<label for="edit_label_publicNet_name" class="col-form-label">Name:</label>' +
+                    '<input type="text" id="edit_publicNet_name" placeholder="Public Net value="' + current_node['names'] + '"><br>' +
+                    '<span id="validate"></span>' + // qui ci sarà un testo che indica che se il nome è già stato utilizzato, esso deve essere modificato!
+                    '</form>' +
+                    //this function check if this name is already in use!
+                    '<div class="modal-footer">' +
+                    '<button type="button" class="btn btn-secondary pull-left" id="deleteLocalPubliceNet_button" data-dismiss="modal">Delete Node</button>' +
+                    '<button type="button" class="btn btn-primary pull-right" id="saveNodePublicNet_button">Save changes</button>' +
+                    '</div>' +
+                    '</div>');
+
+                /*
+                Fatto il form si deve
+                1) validare la form
+                2) chiamare la funzione AllowChangeeName [che verifica se l'utente ha riscritto il nome, e se nel caso l'ha risctitto se era un nome libero] 
+                2) nel caso il nome cambi, Nel caso cambi, bisogna aggiornare data_network_topology['nodes']
+                3) se a form è a posto (tutti i campi completi richiesti sono settati) si cambia il numero del group da 10x a 20x )
+                */
+                break;
+                break;
+
+            case "private_network":
+                $('#editNode_configuration').append(
+                    '<div id="Edit_Node_configuration_content" class="modal-dialog modal-content style="top: 15px; width: 300px; background-color: aliceblue; border: 1px #555 solid; margin-top: 0px;">' +
+                    '<div class="modal-header">' +
+                    '<h5 class="modal-title" style="display: inline" ;> Configure Private Network</h5>' +
+                    '<button id="Edit_Node_configuration_header_close" type="button" class="close">' +
+                    '</button>' +
+                    '</div>' +
+                    '<form id="EditPrivateNetForm">' +
+                    '<p>You will customizee a private net </p>' +
+                    '<label for="edit_label_privateNet_name" class="col-form-label">Net:</label>' +
+                    '<input type="text" id="edit_privateNet_name" placeholder="Private Net name" value="' + current_node['names'] + '">' +
+                    '<span id="validate"></span>' + // qui ci sarà un testo che indica che se il nome è già stato utilizzato, esso deve essere modificato!
+
+                    '</form>' +
+                    //this function check if this name is already in use!
+                    '<div class="modal-footer">' +
+                    '<button type="button" class="btn btn-secondary pull-left" id="deleteLocalPrivateNet_button" data-dismiss="modal">Delete Node</button>' +
+                    '<button type="button" class="btn btn-primary pull-right" id="saveNodePrivateNet_button">Save changes</button>' +
+                    '</div>' +
+                    '</div>');
+                break;
+            case "subnet":
+                $('#editNode_configuration').append(
+                    '<div id="Edit_Node_configuration_content" class="modal-dialog modal-content style="top: 15px; width: 300px; background-color: aliceblue; border: 1px #555 solid; margin-top: 0px;">' +
+                    '<div class="modal-header">' +
+                    '<h5 class="modal-title" style="display: inline" ;> Configure Private Subner </h5>' +
+                    '<button id="Edit_Node_configuration_header_close" type="button" class="close">' +
+                    '</button>' +
+                    '</div>' +
+                    '<form id="EditPrivateSubNetForm">' +
+                    '<p>You will customizee a private subnet </p>' +
+                    //name
+                    '<label for="edit_label_privateSubnet_name" class="col-form-label">SubNet:</label>' +
+                    '<input type="text" id="edit_privateSubnet_name" placeholder="Private SubNet name" value="' + current_node['names'] + '">' +
+                    '<span id="validate"></span>' + // qui ci sarà un testo che indica che se il nome è già stato utilizzato, esso deve essere modificato!
+                    //net
+                    '<label for="edit_label_privateSubnet_net" class="col-form-label">Net:</label>' +
+                    '<div id="edit_privateSubnet_net_dropdown" class="dropdown">' +
+                    '<button type="button" class="btn btn-default dropdown-toggle" data-toggle="dropdown" aria-expanded="false">' +
+                    '<span id="edit_label_privateSubnet_netList" class="dropdown-title">select net</span>' +
+                    '<span class="fa fa-caret-down"></span>' +
+                    '</button>' +
+                    '<ul id="edit_privateSubnet_net_dropdown_menu" class="dropdown-menu"></ul>' +
+                    '</div>' +
+
+
+                    '</form>' +
+                    //this function check if this name is already in use!
+                    '<div class="modal-footer">' +
+                    '<button type="button" class="btn btn-secondary pull-left" id="deleteLocalPrivateSubnet_button" data-dismiss="modal">Delete Node</button>' +
+                    '<button type="button" class="btn btn-primary pull-right" id="saveNodePrivateSubNet_button">Save changes</button>' +
+                    '</div>' +
+                    '</div>');
+
+                break;
+            case "router":
+                //temp_list = data_topology["nodes"].filter(node => (node["group"] == 2 || node["group"] == 202));
+                //temp_list.forEach(node => List.push(node['name']));
+                break;
+            case "vm":
+                //temp_list = data_topology["nodes"].filter(node => (node["group"] == 5 || node["group"] == 205));
+                //temp_list.forEach(node => List.push(node['name']));
+                break;
+            case "switch":
+                //temp_list = data_topology["nodes"].filter(node => (node["group"] == 7 || node["group"] == 207));
+                //temp_list.forEach(node => List.push(node['name']));
+                break;
+            default:
+        }
+
+        //funzione che verifica se un nome è già presente in lista oppure no!
+        function AllowChangeeName(inputText) {
+            console.log("[Function AllowChangeeName:] " + inputText);
+            if (resourceNameList.includes(inputText)) {
+                console.log("trovato elemento con nome:" + inputText);
+                return false;
+            }
+            else {
+                console.log("Il nome " + inputText + " può essere utilizzato per rinominare il nodo corrente!");
+                return true;
+            }
+        }
+
+        /*
+        funzione che restituisce una lista di elemento di un determinata tipologia (definita da string 'nome') 
+        Essa è creata a partire dai nodi già istanziati sulla piattaforma openstack, e anche quelli aggiunti localmente
+        al grafico, ma che sono nello stato di PROVISIONAL.
+
+        */
+        function getList(t) {
+            List = [];
+            switch (t) {
+                case "net":
+                    temp_list = data_topology["nodes"].filter(node => (node["group"] == 1 || node["group"] == 201 || node["group"] == 3 || node["group"] == 203));
+                    temp_list.forEach(node => List.push(node['name']));
+                    break;
+                case "subnet":
+                    temp_list = data_topology["nodes"].filter(node => (node["group"] == 4 || node["group"] == 204));
+                    temp_list.forEach(node => List.push(node['name']));
+                    break;
+                case "router":
+                    temp_list = data_topology["nodes"].filter(node => (node["group"] == 2 || node["group"] == 202));
+                    temp_list.forEach(node => List.push(node['name']));
+                    break;
+                case "vm":
+                    temp_list = data_topology["nodes"].filter(node => (node["group"] == 5 || node["group"] == 205));
+                    temp_list.forEach(node => List.push(node['name']));
+                    break;
+                case "switch":
+                    temp_list = data_topology["nodes"].filter(node => (node["group"] == 7 || node["group"] == 207));
+                    temp_list.forEach(node => List.push(node['name']));
+                    break;
+                default:
+                    List = [];
+            }
+            return List;
+        }
+
+        var resourceNameList;
+        //ogni qualvolta che si mostra questo modal.
+        $('#EditpuEdit_Node_configuration_content').on('shown.bs.modal', function () {
+
+            resourceNameList = [];
+            data_topology['nodes'].forEach(node => resourceNameList.push(node['name']));  // sarà un vettore formato da elementi mi carico il vettore di appogggio
+
+            nameSource = data_topology['nodes'][node_index]['name'];
+            console.log("Si vuol modificare nodes["+node_index+"] -> " + nameSource);
+
+            switch (current_node_groupresource) {
+                case "public_network":
+                    console.log("Stai per modificare una public net")
+                    /*
+                    Fatto il form si deve
+                    1) validare la form
+                    2) chiamare la funzione AllowChangeeName [che verifica se l'utente ha riscritto il nome, e se nel caso l'ha risctitto se era un nome libero] 
+                    2) nel caso il nome cambi, Nel caso cambi, bisogna aggiornare data_network_topology['nodes']
+                    3) se a form è a posto (tutti i campi completi richiesti sono settati) si cambia il numero del group da 10x a 20x )
+                    */
+                    break;
+
+                case "private_network":
+                    console.log("Stai per modificare una private net");
+
+                    break;
+                case "subnet":
+                    console.log("Stai per modificare una subnet net");
+                    /* NB DEVE FARE UN CONTROLLO SUGLI INDIRIZZI IP,
+                        sia con una validate ip, ovvero effettivamente verificare che si tratti di indirizzi ip validi
+                        sia che quest indirizzi ip siano liberi.
+                        quindi bisogna fare una funzione che verifichi se il pool di indirizzi ip che si sta per creare è buono.
+                        Si può anche impostare in automatico che una volta settato il pool le altre informazioni,
+                        gateway, range, ecc ecc siano impostate di default.
+                        ma il controllo sul pool deve essere fatto!
+
+                    */
+                    break;
+                case "router":
+                   console.log("Stai per modificare un router");
+                //temp_list = data_topology["nodes"].filter(node => (node["group"] == 2 || node["group"] == 202));
+                    //temp_list.forEach(node => List.push(node['name']));
+                    break;
+                case "vm":
+                    console.log("Stai per modificare una  vm");
+
+                    //temp_list = data_topology["nodes"].filter(node => (node["group"] == 5 || node["group"] == 205));
+                    //temp_list.forEach(node => List.push(node['name']));
+                    break;
+                case "switch":
+                   console.log("Stai per modificare uno switch");
+                //temp_list = data_topology["nodes"].filter(node => (node["group"] == 7 || node["group"] == 207));
+                    //temp_list.forEach(node => List.push(node['name']));
+                    break;
+                default:
+    
+                    break;
+            }
+
+        });
+            //dipendentemente dalla tipologia del field che si vuole settare si vanno  a caricare tutti gli elementi !
+            //funzione che permette di aggiungere gli elementi relativi alle option di 
+            //netListEditrouter_dropdown_menu
+            //quindi per ogni valore che c'è nella lista 
+ /*           $("#netListEditrouter_dropdown_menu").html("");
+            netlists = getList('net');
+            if (netlists.length) {
+                for (var i = 0; i < netlists.length; i++) {
+                    $("#netListEditrouter_dropdown_menu").append(
+                        '<li data-original-index="' + i + 1 + '" data-toggle="tooltip" data-placement="top">' +
+                        '<a data-select-value="' + listaelementi[i] + '">' + listaelementi[i] + '</a>' +
+                        '</li>'
+                    );
+                }
+                $('#netListEditrouter_dropdown_menu li a').click(function () {
+                    //on change netListLabel content
+                    if ($('#netListEditrouter_label').text() !== $(this).text()) {
+                        $('#netListEditrouter_label').text($(this).text());
+                    }
+
+                    if ($('#netListEditrouter_label').text() !== ("select net")) {
+                        $('#netListEditrouter_button_save').prop('disabled', false);
+                    }
+                });
+            }
+            else {
+                $('#netListEditrouter_label').text("Empty");
+                $('#netListEditrouter_dropdown button').prop('disabled', true);
+            }
+        });
+*/
+    
